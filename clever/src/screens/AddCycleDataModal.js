@@ -1,5 +1,3 @@
-// src/screens/AddCycleDataModal.js
-
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -12,7 +10,6 @@ import {
 } from "react-native";
 
 const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
-  // Initialize the states with empty strings or default values
   const [flow, setFlow] = useState("");
   const [pain, setPain] = useState("");
   const [spotting, setSpotting] = useState("");
@@ -20,30 +17,35 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
 
   useEffect(() => {
     if (initialData) {
-      // If there is initial data, set the fields to the existing values
-      setFlow(initialData.flow);
-      setPain(initialData.pain);
-      setSpotting(initialData.spotting);
-      setFeelings(initialData.feelings);
+      setFlow(initialData.flow || "");
+      setPain(initialData.pain || "");
+      setSpotting(initialData.spotting || "");
+      setFeelings(initialData.feelings || "");
     } else {
-      // If no initial data (i.e., new entry), reset to default values (empty string or initial state)
       setFlow("");
       setPain("");
       setSpotting("");
       setFeelings("");
     }
-  }, [initialData]); // Run every time initialData changes
+  }, [initialData]);
 
   const handleSave = () => {
     const data = { flow, pain, spotting, feelings };
-    onSave(date, data); // Save the data
-    onClose(); // Close the modal after saving
+    if (!flow && !pain && !spotting && !feelings) {
+      onSave(date, null); // Clear data if nothing is selected
+    } else {
+      onSave(date, data); // Save data if something is selected
+    }
+    onClose();
   };
 
   const renderButton = (title, currentValue, setValue) => (
     <TouchableOpacity
-      style={[styles.button, currentValue === title && styles.selectedButton]} // Highlight selected button
-      onPress={() => setValue(title)} // Set value when button is pressed
+      key={title}
+      style={[styles.button, currentValue === title && styles.selectedButton]}
+      onPress={() => {
+        setValue(currentValue === title ? "" : title);
+      }}
     >
       <Text style={styles.buttonText}>{title}</Text>
     </TouchableOpacity>
@@ -118,7 +120,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   selectedButton: {
-    backgroundColor: "#ff6347", // Highlight selected button
+    backgroundColor: "#ff6347",
   },
   buttonText: {
     color: "#fff",
@@ -132,8 +134,6 @@ const styles = StyleSheet.create({
 });
 
 export default AddCycleDataModal;
-
-// // src/screens/AddCycleDataModal.js
 
 // import React, { useEffect, useState } from "react";
 // import {
@@ -152,25 +152,37 @@ export default AddCycleDataModal;
 //   const [spotting, setSpotting] = useState("");
 //   const [feelings, setFeelings] = useState("");
 
+//   // Set initial values when the modal is opened
 //   useEffect(() => {
 //     if (initialData) {
-//       setFlow(initialData.flow);
-//       setPain(initialData.pain);
-//       setSpotting(initialData.spotting);
-//       setFeelings(initialData.feelings);
+//       setFlow(initialData.flow || ""); // Set initial values from data if available
+//       setPain(initialData.pain || "");
+//       setSpotting(initialData.spotting || "");
+//       setFeelings(initialData.feelings || "");
+//     } else {
+//       setFlow(""); // Default values for new entries
+//       setPain("");
+//       setSpotting("");
+//       setFeelings("");
 //     }
-//   }, [initialData]);
+//   }, [initialData]); // This runs every time `initialData` changes
 
+//   // Handle saving the data when user clicks Save
 //   const handleSave = () => {
 //     const data = { flow, pain, spotting, feelings };
-//     onSave(date, data);
-//     onClose();
+//     onSave(date, data); // Pass the updated data to the parent component (CalendarScreen)
+//     onClose(); // Close the modal after saving
 //   };
 
+//   // Toggle button selection logic
 //   const renderButton = (title, currentValue, setValue) => (
 //     <TouchableOpacity
-//       style={[styles.button, currentValue === title && styles.selectedButton]}
-//       onPress={() => setValue(title)}
+//       key={title}
+//       style={[styles.button, currentValue === title && styles.selectedButton]} // Highlight button if selected
+//       onPress={() => {
+//         // Toggle selection (if selected, unselect it)
+//         setValue(currentValue === title ? "" : title);
+//       }}
 //     >
 //       <Text style={styles.buttonText}>{title}</Text>
 //     </TouchableOpacity>
@@ -259,161 +271,3 @@ export default AddCycleDataModal;
 // });
 
 // export default AddCycleDataModal;
-
-// // // src/screens/AddCycleDataModal.js
-
-// // import React, { useEffect, useState } from "react";
-// // import { Button, Modal, StyleSheet, Text, TextInput, View } from "react-native";
-
-// // const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
-// //   const [flow, setFlow] = useState("");
-// //   const [pain, setPain] = useState("");
-// //   const [spotting, setSpotting] = useState("");
-// //   const [feelings, setFeelings] = useState("");
-
-// //   // If there's initial data passed, populate the fields with it
-// //   useEffect(() => {
-// //     if (initialData) {
-// //       setFlow(initialData.flow);
-// //       setPain(initialData.pain);
-// //       setSpotting(initialData.spotting);
-// //       setFeelings(initialData.feelings);
-// //     }
-// //   }, [initialData]); // Run whenever the initialData changes
-
-// //   const handleSave = () => {
-// //     const data = { flow, pain, spotting, feelings };
-// //     onSave(date, data); // Save data to AsyncStorage
-// //     onClose(); // Close the modal
-// //   };
-
-// //   return (
-// //     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-// //       <View style={styles.modalContainer}>
-// //         <Text style={styles.title}>Cycle Data for {date}</Text>
-// //         <TextInput
-// //           placeholder="Flow (light/medium/heavy)"
-// //           value={flow}
-// //           onChangeText={setFlow}
-// //           style={styles.input}
-// //         />
-// //         <TextInput
-// //           placeholder="Pain (none/mild/severe)"
-// //           value={pain}
-// //           onChangeText={setPain}
-// //           style={styles.input}
-// //         />
-// //         <TextInput
-// //           placeholder="Spotting (yes/no)"
-// //           value={spotting}
-// //           onChangeText={setSpotting}
-// //           style={styles.input}
-// //         />
-// //         <TextInput
-// //           placeholder="Feelings"
-// //           value={feelings}
-// //           onChangeText={setFeelings}
-// //           style={styles.input}
-// //         />
-// //         <Button title="Save" onPress={handleSave} />
-// //         <Button title="Cancel" onPress={onClose} />
-// //       </View>
-// //     </Modal>
-// //   );
-// // };
-
-// // const styles = StyleSheet.create({
-// //   modalContainer: {
-// //     flex: 1,
-// //     justifyContent: "center",
-// //     padding: 20,
-// //     backgroundColor: "#fff",
-// //   },
-// //   title: {
-// //     fontSize: 20,
-// //     fontWeight: "bold",
-// //     marginBottom: 20,
-// //   },
-// //   input: {
-// //     borderBottomWidth: 1,
-// //     marginBottom: 10,
-// //     padding: 8,
-// //     fontSize: 16,
-// //   },
-// // });
-
-// // export default AddCycleDataModal;
-
-// // // // src/screens/AddCycleDataModal.js
-
-// // // import React, { useState } from "react";
-// // // import { Button, Modal, StyleSheet, Text, TextInput, View } from "react-native";
-
-// // // const AddCycleDataModal = ({ visible, onClose, onSave, date }) => {
-// // //   const [flow, setFlow] = useState("");
-// // //   const [pain, setPain] = useState("");
-// // //   const [spotting, setSpotting] = useState("");
-// // //   const [feelings, setFeelings] = useState("");
-
-// // //   const handleSave = () => {
-// // //     const data = { flow, pain, spotting, feelings };
-// // //     onSave(date, data); // Save data to AsyncStorage
-// // //     onClose(); // Close the modal
-// // //   };
-
-// // //   return (
-// // //     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-// // //       <View style={styles.modalContainer}>
-// // //         <Text style={styles.title}>Cycle Data for {date}</Text>
-// // //         <TextInput
-// // //           placeholder="Flow (light/medium/heavy)"
-// // //           value={flow}
-// // //           onChangeText={setFlow}
-// // //           style={styles.input}
-// // //         />
-// // //         <TextInput
-// // //           placeholder="Pain (none/mild/severe)"
-// // //           value={pain}
-// // //           onChangeText={setPain}
-// // //           style={styles.input}
-// // //         />
-// // //         <TextInput
-// // //           placeholder="Spotting (yes/no)"
-// // //           value={spotting}
-// // //           onChangeText={setSpotting}
-// // //           style={styles.input}
-// // //         />
-// // //         <TextInput
-// // //           placeholder="Feelings"
-// // //           value={feelings}
-// // //           onChangeText={setFeelings}
-// // //           style={styles.input}
-// // //         />
-// // //         <Button title="Save" onPress={handleSave} />
-// // //         <Button title="Cancel" onPress={onClose} />
-// // //       </View>
-// // //     </Modal>
-// // //   );
-// // // };
-
-// // // const styles = StyleSheet.create({
-// // //   modalContainer: {
-// // //     flex: 1,
-// // //     justifyContent: "center",
-// // //     padding: 20,
-// // //     backgroundColor: "#fff",
-// // //   },
-// // //   title: {
-// // //     fontSize: 20,
-// // //     fontWeight: "bold",
-// // //     marginBottom: 20,
-// // //   },
-// // //   input: {
-// // //     borderBottomWidth: 1,
-// // //     marginBottom: 10,
-// // //     padding: 8,
-// // //     fontSize: 16,
-// // //   },
-// // // });
-
-// // // export default AddCycleDataModal;
