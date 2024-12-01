@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { Calendar } from "react-native-calendars";
 import AddCycleDataModal from "./AddCycleDataModal";
 
@@ -10,13 +10,14 @@ const CalendarScreen = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [predictedPeriodDate, setPredictedPeriodDate] = useState(null);
 
+  // Load saved cycle data from AsyncStorage when the component mounts
   useEffect(() => {
     const loadCycleData = async () => {
       const data = await AsyncStorage.getItem("cycleData");
       if (data) {
         const parsedData = JSON.parse(data);
         setCycleData(parsedData);
-        setPredictedPeriodDate(getPredictedPeriodDate(parsedData));
+        setPredictedPeriodDate(getPredictedPeriodDate(parsedData)); // Update prediction based on loaded data
       }
     };
 
@@ -27,27 +28,28 @@ const CalendarScreen = () => {
     let updatedCycleData = { ...cycleData };
 
     if (data === null) {
-      delete updatedCycleData[date];
+      delete updatedCycleData[date]; // Remove data for this date
     } else {
-      updatedCycleData[date] = data;
+      updatedCycleData[date] = data; // Save new data for this date
     }
 
     setCycleData(updatedCycleData);
     await AsyncStorage.setItem("cycleData", JSON.stringify(updatedCycleData));
-    setPredictedPeriodDate(getPredictedPeriodDate(updatedCycleData));
+    setPredictedPeriodDate(getPredictedPeriodDate(updatedCycleData)); // Update prediction after saving data
   };
 
   const getExistingDataForDate = (date) => {
     return cycleData[date] || null;
   };
 
+  // Mark dates that have cycle data
   const markedDates = Object.keys(cycleData).reduce((acc, date) => {
     if (cycleData[date]) {
       acc[date] = {
         selected: true,
-        selectedColor: "#ff6347",
+        selectedColor: "#ff6347", // Red for period days
         marked: true,
-        dotColor: "#ff6347",
+        dotColor: "#ff6347", // Add a dot to show there's data
       };
     }
     return acc;
@@ -56,82 +58,106 @@ const CalendarScreen = () => {
   const handleDayPress = (day) => {
     const currentDate = day.dateString;
     const existingData = getExistingDataForDate(currentDate);
-
     setSelectedDate(currentDate);
     setIsModalVisible(true);
   };
 
+  // Function to predict the next period based on the first input date of the current month
   const getPredictedPeriodDate = (cycleData) => {
+    // Get the earliest date (the first input for the month)
     const dates = Object.keys(cycleData);
-    const lastDate = new Date(
-      Math.max(...dates.map((date) => new Date(date).getTime()))
+
+    if (dates.length === 0) return null; // No cycle data available yet
+
+    // Find the earliest (first) date in the cycle data
+    const firstDate = new Date(
+      Math.min(...dates.map((date) => new Date(date).getTime()))
     );
-    const predictedStartDate = new Date(lastDate);
-    predictedStartDate.setDate(lastDate.getDate() + 30);
+
+    // Add 28 days to that date to predict the next period
+    const predictedStartDate = new Date(firstDate);
+    predictedStartDate.setDate(firstDate.getDate() + 28); // 28 days cycle prediction
+
+    // Return the predicted date in 'YYYY-MM-DD' format
     return predictedStartDate.toISOString().split("T")[0];
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Track Your Cycle</Text>
+    <SafeAreaView style={styles.safeAreaContainer}>
+      {/* Title and predicted date */}
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>Track Your Cycle</Text>
 
-      {predictedPeriodDate && (
-        <Text style={styles.predictedDate}>
-          Your next period is likely to start on {predictedPeriodDate}
-        </Text>
-      )}
+        {predictedPeriodDate && (
+          <Text style={styles.predictedDate}>
+            Your next period is likely to start on {predictedPeriodDate}
+          </Text>
+        )}
+      </View>
 
-      <Calendar
-        current={new Date().toISOString().split("T")[0]}
-        markedDates={markedDates}
-        onDayPress={handleDayPress}
-        theme={{
-          selectedDayBackgroundColor: "#ff6347",
-          selectedDayTextColor: "#ffffff",
-          todayTextColor: "#ff6347",
-          arrowColor: "#ff6347",
-        }}
-      />
+      {/* Calendar */}
+      <View style={styles.calendarContainer}>
+        <Calendar
+          current={new Date().toISOString().split("T")[0]} // Set current date
+          markedDates={markedDates}
+          onDayPress={handleDayPress} // Open modal when a date is selected
+          theme={{
+            selectedDayBackgroundColor: "#ff6347", // Red for period days
+            selectedDayTextColor: "#ffffff",
+            todayTextColor: "#ff6347", // Highlight today's date
+            arrowColor: "#ff6347",
+          }}
+        />
+      </View>
 
+      {/* Modal for adding/editing cycle data */}
       <AddCycleDataModal
         visible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
         onSave={handleAddCycleData}
         date={selectedDate}
-        initialData={getExistingDataForDate(selectedDate)}
+        initialData={getExistingDataForDate(selectedDate)} // Pass existing data or undefined
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeAreaContainer: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#fdfdfd",
+  },
+  textContainer: {
+    paddingTop: 40, // Space below the status bar
+    alignItems: "center",
+    marginBottom: 20,
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   predictedDate: {
     fontSize: 16,
     fontStyle: "italic",
     color: "#ff6347",
-    marginBottom: 20,
+  },
+  calendarContainer: {
+    flex: 1,
+    justifyContent: "flex-start", // Keeps the calendar in the upper part of the container
+    //alignItems: "center",
+    //marginTop: "33%", // Positions the calendar 1/3 down the screen
+    width: "100%", // Ensures the calendar takes full width
   },
 });
 
 export default CalendarScreen;
 
-// // src/screens/CalendarScreen.js
-
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 // import React, { useEffect, useState } from "react";
-// import { StyleSheet, Text, View } from "react-native";
+// import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 // import { Calendar } from "react-native-calendars";
-// import AddCycleDataModal from "./AddCycleDataModal"; // Import the modal component
+// import AddCycleDataModal from "./AddCycleDataModal";
 
 // const CalendarScreen = () => {
 //   const [cycleData, setCycleData] = useState({});
@@ -139,86 +165,94 @@ export default CalendarScreen;
 //   const [selectedDate, setSelectedDate] = useState(null);
 //   const [predictedPeriodDate, setPredictedPeriodDate] = useState(null);
 
-//   // Load saved cycle data from AsyncStorage when the component mounts
 //   useEffect(() => {
 //     const loadCycleData = async () => {
 //       const data = await AsyncStorage.getItem("cycleData");
 //       if (data) {
 //         const parsedData = JSON.parse(data);
 //         setCycleData(parsedData);
-//         setPredictedPeriodDate(getPredictedPeriodDate(parsedData)); // Update predicted date
+//         setPredictedPeriodDate(getPredictedPeriodDate(parsedData));
 //       }
 //     };
 
 //     loadCycleData();
 //   }, []);
 
-//   // Save cycle data to AsyncStorage
 //   const handleAddCycleData = async (date, data) => {
-//     const updatedCycleData = { ...cycleData, [date]: data };
+//     let updatedCycleData = { ...cycleData };
+
+//     if (data === null) {
+//       delete updatedCycleData[date]; // Remove data for this date
+//     } else {
+//       updatedCycleData[date] = data; // Save new data for this date
+//     }
+
 //     setCycleData(updatedCycleData);
-
-//     // Save the updated cycle data in AsyncStorage
 //     await AsyncStorage.setItem("cycleData", JSON.stringify(updatedCycleData));
-
-//     // Recalculate the predicted next period date based on the updated data
-//     setPredictedPeriodDate(getPredictedPeriodDate(updatedCycleData));
+//     setPredictedPeriodDate(getPredictedPeriodDate(updatedCycleData)); // Update the prediction
 //   };
 
-//   // Get existing data for the selected date
 //   const getExistingDataForDate = (date) => {
-//     return cycleData[date];
+//     return cycleData[date] || null;
 //   };
 
-//   // Mark dates with cycle data
+//   // Mark dates that have cycle data
 //   const markedDates = Object.keys(cycleData).reduce((acc, date) => {
-//     acc[date] = {
-//       selected: true,
-//       selectedColor: "#ff6347", // Red for period days
-//       marked: true,
-//       dotColor: "#ff6347", // Add a dot to show there's data
-//     };
+//     if (cycleData[date]) {
+//       acc[date] = {
+//         selected: true,
+//         selectedColor: "#ff6347", // Red for period days
+//         marked: true,
+//         dotColor: "#ff6347", // Add a dot to show there's data
+//       };
+//     }
 //     return acc;
 //   }, {});
 
 //   const handleDayPress = (day) => {
-//     setSelectedDate(day.dateString);
-//     setIsModalVisible(true); // Open the modal when a date is selected
+//     const currentDate = day.dateString;
+//     const existingData = getExistingDataForDate(currentDate);
+//     setSelectedDate(currentDate);
+//     setIsModalVisible(true);
 //   };
 
-//   // Function to predict the next period based on the last logged date
 //   const getPredictedPeriodDate = (cycleData) => {
 //     const dates = Object.keys(cycleData);
 //     const lastDate = new Date(
 //       Math.max(...dates.map((date) => new Date(date).getTime()))
-//     ); // Find the latest date
+//     );
 //     const predictedStartDate = new Date(lastDate);
 //     predictedStartDate.setDate(lastDate.getDate() + 30); // Predict 30 days from the last cycle
-
-//     return predictedStartDate.toISOString().split("T")[0]; // Return in 'YYYY-MM-DD' format
+//     return predictedStartDate.toISOString().split("T")[0]; // Return date in 'YYYY-MM-DD' format
 //   };
 
 //   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>Track Your Cycle</Text>
+//     <SafeAreaView style={styles.safeAreaContainer}>
+//       {/* Title and predicted date */}
+//       <View style={styles.textContainer}>
+//         <Text style={styles.title}>Track Your Cycle</Text>
 
-//       {predictedPeriodDate && (
-//         <Text style={styles.predictedDate}>
-//           Your next period is likely to start on {predictedPeriodDate}
-//         </Text>
-//       )}
+//         {predictedPeriodDate && (
+//           <Text style={styles.predictedDate}>
+//             Your next period is likely to start on {predictedPeriodDate}
+//           </Text>
+//         )}
+//       </View>
 
-//       <Calendar
-//         current={new Date().toISOString().split("T")[0]} // Set current date
-//         markedDates={markedDates}
-//         onDayPress={handleDayPress} // Handle day press to open modal
-//         theme={{
-//           selectedDayBackgroundColor: "#ff6347", // Red for period days
-//           selectedDayTextColor: "#ffffff",
-//           todayTextColor: "#ff6347", // Highlight today's date
-//           arrowColor: "#ff6347",
-//         }}
-//       />
+//       {/* Calendar */}
+//       <View style={styles.calendarContainer}>
+//         <Calendar
+//           current={new Date().toISOString().split("T")[0]} // Set current date
+//           markedDates={markedDates}
+//           onDayPress={handleDayPress} // Open modal when a date is selected
+//           theme={{
+//             selectedDayBackgroundColor: "#ff6347", // Red for period days
+//             selectedDayTextColor: "#ffffff",
+//             todayTextColor: "#ff6347", // Highlight today's date
+//             arrowColor: "#ff6347",
+//           }}
+//         />
+//       </View>
 
 //       {/* Modal for adding/editing cycle data */}
 //       <AddCycleDataModal
@@ -228,26 +262,36 @@ export default CalendarScreen;
 //         date={selectedDate}
 //         initialData={getExistingDataForDate(selectedDate)} // Pass existing data or undefined
 //       />
-//     </View>
+//     </SafeAreaView>
 //   );
 // };
 
 // const styles = StyleSheet.create({
-//   container: {
+//   safeAreaContainer: {
 //     flex: 1,
-//     padding: 20,
 //     backgroundColor: "#fdfdfd",
+//   },
+//   textContainer: {
+//     paddingTop: 40, // This will allow some space below the status bar
+//     alignItems: "center",
+//     marginBottom: 20,
 //   },
 //   title: {
 //     fontSize: 20,
 //     fontWeight: "bold",
-//     marginBottom: 20,
+//     marginBottom: 10,
 //   },
 //   predictedDate: {
 //     fontSize: 16,
 //     fontStyle: "italic",
 //     color: "#ff6347",
-//     marginBottom: 20,
+//   },
+//   calendarContainer: {
+//     flex: 1,
+//     justifyContent: "flex-start", // Keeps the calendar in the upper part of the container
+//     //alignItems: "center",
+//     //marginTop: "5%", // Positions the calendar 1/3 down the screen
+//     width: "100%", // Ensures the calendar takes full width
 //   },
 // });
 
