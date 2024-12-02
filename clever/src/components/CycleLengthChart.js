@@ -1,8 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { VictoryChart, VictoryLine } from "victory-native";
+import {
+  VictoryAxis,
+  VictoryChart,
+  VictoryLine,
+  VictoryScatter,
+  VictoryTheme,
+} from "victory";
 
-export default function CycleLengthChart() {
+const CycleLengthChart = () => {
   const [cycleData, setCycleData] = useState([]);
 
   useEffect(() => {
@@ -21,26 +27,29 @@ export default function CycleLengthChart() {
   const formatCycleData = (cycleData) => {
     return Object.keys(cycleData).map((date) => ({
       date,
-      cycleLength: cycleData[date].cycleLength || 28, // Default cycle length if missing
+      cycleLength: cycleData[date].cycleLength || 28,
     }));
   };
 
   const data =
     cycleData.length > 0
       ? cycleData.map((cycle) => ({
-          x: cycle.date, // Date of cycle start
-          y: cycle.cycleLength, // Length of cycle (in days)
+          x: new Date(cycle.date).toISOString().split("T")[0],
+          y: cycle.cycleLength,
         }))
       : [];
 
   return (
-    <VictoryChart domainPadding={20}>
+    <VictoryChart domainPadding={20} theme={VictoryTheme.material}>
+      <VictoryAxis />
+      <VictoryAxis dependentAxis />
       <VictoryLine
         data={data}
-        style={{
-          data: { stroke: "#ff6347", strokeWidth: 3 },
-        }}
+        style={{ data: { stroke: "#ff6347", strokeWidth: 3 } }}
       />
+      <VictoryScatter data={data} style={{ data: { fill: "#ff6347" } }} />
     </VictoryChart>
   );
-}
+};
+
+export default CycleLengthChart;

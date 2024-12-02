@@ -1,11 +1,28 @@
-import React from "react";
-import { StyleSheet, Text } from "react-native";
-//import CycleLengthChart from "../components/CycleLengthChart"; // No need to pass cycleData anymore
-import { ScrollView, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import CycleLengthChart from "../components/CycleLengthChart"; // No need to pass cycleData anymore
 
-const InsightsScreen = ({ cycleData, symptomsData, moodData }) => {
-  console.log("HERE");
-  console.log("Cycle Data", cycleData);
+const InsightsScreen = () => {
+  // print in insights screen
+  console.log("InsightsScreen");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await AsyncStorage.getItem(cycleData); // Replace 'your_key' with the actual key
+        if (data !== null) {
+          console.log("AsyncStorage Data:", JSON.parse(data));
+        } else {
+          console.log("No data found in AsyncStorage");
+        }
+      } catch (error) {
+        console.error("Error fetching data from AsyncStorage", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -14,8 +31,7 @@ const InsightsScreen = ({ cycleData, symptomsData, moodData }) => {
       {/* Cycle Length Chart */}
       <View style={styles.chartContainer}>
         <Text style={styles.sectionTitle}>Cycle Length Trend</Text>
-        {/* <CycleLengthChart cycleData={cycleData} />{" "} */}
-        {/* Make sure cycleData is valid */}
+        <CycleLengthChart />
       </View>
 
       {/* Ovulation Prediction Chart */}
@@ -41,23 +57,21 @@ const InsightsScreen = ({ cycleData, symptomsData, moodData }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 20,
-    marginTop: 50,
+    flexGrow: 1,
+    padding: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    marginTop: 10,
-    marginBottom: 10,
     fontWeight: "bold",
+    marginBottom: 8,
   },
   chartContainer: {
-    marginBottom: 20,
+    marginBottom: 32,
   },
 });
 
