@@ -29,13 +29,31 @@ const CalendarScreen = () => {
     if (data === null) {
       delete updatedCycleData[date]; // Remove data for this date
     } else {
-      updatedCycleData[date] = data; // Save new data for this date
+      // Save the cycle data with the cycle length (for example)
+      updatedCycleData[date] = {
+        ...data, // existing data
+        cycleLength: data.cycleLength || 28, // Default cycle length (you can adjust this)
+      };
     }
 
     setCycleData(updatedCycleData);
     await AsyncStorage.setItem("cycleData", JSON.stringify(updatedCycleData));
     setPredictedPeriodDate(getPredictedPeriodDate(updatedCycleData)); // Update the prediction
   };
+
+  // const handleAddCycleData = async (date, data) => {
+  //   let updatedCycleData = { ...cycleData };
+
+  //   if (data === null) {
+  //     delete updatedCycleData[date]; // Remove data for this date
+  //   } else {
+  //     updatedCycleData[date] = data; // Save new data for this date
+  //   }
+
+  //   setCycleData(updatedCycleData);
+  //   await AsyncStorage.setItem("cycleData", JSON.stringify(updatedCycleData));
+  //   setPredictedPeriodDate(getPredictedPeriodDate(updatedCycleData)); // Update the prediction
+  // };
 
   const getExistingDataForDate = (date) => {
     return cycleData[date] || null;

@@ -1,9 +1,32 @@
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
 import { VictoryChart, VictoryLine } from "victory-native";
 
-const CycleLengthChart = ({ cycleData }) => {
+export default function CycleLengthChart() {
+  const [cycleData, setCycleData] = useState([]);
+
+  useEffect(() => {
+    const loadCycleData = async () => {
+      const data = await AsyncStorage.getItem("cycleData");
+      if (data) {
+        const parsedData = JSON.parse(data);
+        const formattedData = formatCycleData(parsedData);
+        setCycleData(formattedData);
+      }
+    };
+
+    loadCycleData();
+  }, []);
+
+  const formatCycleData = (cycleData) => {
+    return Object.keys(cycleData).map((date) => ({
+      date,
+      cycleLength: cycleData[date].cycleLength || 28, // Default cycle length if missing
+    }));
+  };
+
   const data =
-    Array.isArray(cycleData) && cycleData.length > 0
+    cycleData.length > 0
       ? cycleData.map((cycle) => ({
           x: cycle.date, // Date of cycle start
           y: cycle.cycleLength, // Length of cycle (in days)
@@ -20,6 +43,4 @@ const CycleLengthChart = ({ cycleData }) => {
       />
     </VictoryChart>
   );
-};
-
-export default CycleLengthChart; // Ensure default export here
+}
