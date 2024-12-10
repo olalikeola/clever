@@ -1,12 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import {
-  VictoryAxis,
-  VictoryChart,
-  VictoryLine,
-  VictoryScatter,
-  VictoryTheme,
-} from "victory";
+import { ScrollView, StyleSheet, Text } from "react-native";
+import { LineChart } from "react-native-chart-kit";
 
 const CycleLengthChart = () => {
   const [cycleData, setCycleData] = useState([]);
@@ -31,25 +26,51 @@ const CycleLengthChart = () => {
     }));
   };
 
-  const data =
-    cycleData.length > 0
-      ? cycleData.map((cycle) => ({
-          x: new Date(cycle.date).toISOString().split("T")[0],
-          y: cycle.cycleLength,
-        }))
-      : [];
+  const data = {
+    labels: cycleData.map(
+      (cycle) => new Date(cycle.date).toISOString().split("T")[0]
+    ),
+    datasets: [
+      {
+        data: cycleData.map((cycle) => cycle.cycleLength),
+      },
+    ],
+  };
 
   return (
-    <VictoryChart domainPadding={20} theme={VictoryTheme.material}>
-      <VictoryAxis />
-      <VictoryAxis dependentAxis />
-      <VictoryLine
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>Cycle Length Trend</Text>
+      <LineChart
         data={data}
-        style={{ data: { stroke: "#ff6347", strokeWidth: 3 } }}
+        width={320} // from react-native
+        height={220}
+        chartConfig={{
+          backgroundColor: "#e26a00",
+          backgroundGradientFrom: "#fb8c00",
+          backgroundGradientTo: "#ffa726",
+          decimalPlaces: 2, // optional, defaults to 2dp
+          color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+          labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+          style: {
+            borderRadius: 16,
+          },
+        }}
+        bezier
       />
-      <VictoryScatter data={data} style={{ data: { fill: "#ff6347" } }} />
-    </VictoryChart>
+    </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+});
 
 export default CycleLengthChart;

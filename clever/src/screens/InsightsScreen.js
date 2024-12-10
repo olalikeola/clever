@@ -2,6 +2,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import CycleLengthChart from "../components/CycleLengthChart"; // No need to pass cycleData anymore
+import MoodTrendsChart from "../components/MoodTrendsChart"; // No need to pass moodData anymore
+import OvulationPredictionChart from "../components/OvulationPredictionChart"; // No need to pass cycleData anymore
+import SymptomChart from "../components/SymptomChart"; // No need to pass symptomData anymore
 
 const InsightsScreen = () => {
   // print in insights screen
@@ -37,19 +40,19 @@ const InsightsScreen = () => {
       {/* Ovulation Prediction Chart */}
       <View style={styles.chartContainer}>
         <Text style={styles.sectionTitle}>Ovulation Prediction</Text>
-        {/* <OvulationPredictionChart cycleData={cycleData} /> */}
+        <OvulationPredictionChart />
       </View>
 
       {/* Symptom Trends Chart */}
       <View style={styles.chartContainer}>
         <Text style={styles.sectionTitle}>Symptom Trends</Text>
-        {/* <SymptomChart symptomsData={symptomsData} /> */}
+        <SymptomChart />
       </View>
 
       {/* Mood Trends Chart */}
       <View style={styles.chartContainer}>
         <Text style={styles.sectionTitle}>Mood Trends</Text>
-        {/* <MoodTrendsChart moodData={moodData} /> */}
+        <MoodTrendsChart />
       </View>
     </ScrollView>
   );
