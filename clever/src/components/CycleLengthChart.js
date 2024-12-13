@@ -7,7 +7,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { PieChart } from "react-native-chart-kit"; // Corrected import for PieChart
+import { PieChart } from "react-native-chart-kit";
+
+import { Dimensions } from "react-native";
+
+const screenWidth = Dimensions.get("window").width;
 
 // Function to calculate the phases based on cycle data
 const calculateCyclePhases = (cycleData) => {
@@ -186,8 +190,8 @@ const CycleLengthChart = () => {
               }}
               accessor="population" // This should match the field for population
               backgroundColor="transparent" // Set background transparent to avoid black screen
-              paddingLeft="45" // Adding some padding to avoid clipping
-              withLegend={false} // Hide the default legend
+              paddingLeft={screenWidth / 6} // Adding some padding to avoid clipping
+              hasLegend={false} // Hide the default legend
             />
           </View>
 
@@ -269,6 +273,8 @@ const styles = StyleSheet.create({
     justifyContent: "center", // Ensures the chart is centered in the container
     alignItems: "center", // Ensures the chart is centered in the container
     marginBottom: 16,
+    width: "100%", // Ensure the chart takes up the full width
+    height: 300, // Optional: Set a height to give more space for the pie chart if needed
   },
   legendContainer: {
     flexDirection: "row", // Align legend items in a row

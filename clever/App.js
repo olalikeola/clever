@@ -23,7 +23,7 @@ export default function App() {
           component={CalendarScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <EvilIcons name="calendar" size={size} color={color} />
+              <EvilIcons name="calendar" size={size} color="#6200EE" />
             ),
           }}
         />
@@ -32,7 +32,7 @@ export default function App() {
           component={InsightsScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="insights" size={size} color={color} />
+              <MaterialIcons name="insights" size={size} color="#6200EE" />
             ),
           }}
         />
