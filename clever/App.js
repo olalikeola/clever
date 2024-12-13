@@ -6,7 +6,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 import React from "react";
 import CalendarScreen from "./src/screens/CalendarScreen";
 import InsightsScreen from "./src/screens/InsightsScreen";
-import SettingsScreen from "./src/screens/SettingsScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -37,7 +36,7 @@ export default function App() {
             ),
           }}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="Settings"
           component={SettingsScreen}
           options={{
@@ -45,7 +44,7 @@ export default function App() {
               <EvilIcons name="gear" size={size} color={color} />
             ),
           }}
-        />
+        /> */}
       </Tab.Navigator>
     </NavigationContainer>
   );

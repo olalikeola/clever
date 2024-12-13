@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import {
   Button,
   Modal,
+  Platform,
+  SafeAreaView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -14,6 +17,15 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
   const [pain, setPain] = useState("");
   const [spotting, setSpotting] = useState("");
   const [feelings, setFeelings] = useState("");
+  const [mentalSymptoms, setMentalSymptoms] = useState([]);
+  const [notes, setNotes] = useState("");
+
+  // Format the date into the desired format: "Dec 12, 2024"
+  const formattedDate = new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 
   useEffect(() => {
     if (initialData) {
@@ -21,17 +33,35 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
       setPain(initialData.pain || "");
       setSpotting(initialData.spotting || "");
       setFeelings(initialData.feelings || "");
+      setMentalSymptoms(initialData.mentalSymptoms || []);
+      setNotes(initialData.notes || "");
     } else {
       setFlow("");
       setPain("");
       setSpotting("");
       setFeelings("");
+      setMentalSymptoms([]);
+      setNotes("");
     }
   }, [initialData]);
 
   const handleSave = () => {
-    const data = { flow, pain, spotting, feelings };
-    if (!flow && !pain && !spotting && !feelings) {
+    const data = {
+      flow,
+      pain,
+      spotting,
+      feelings,
+      mentalSymptoms,
+      notes,
+    };
+    if (
+      !flow &&
+      !pain &&
+      !spotting &&
+      !feelings &&
+      mentalSymptoms.length === 0 &&
+      !notes
+    ) {
       onSave(date, null); // Clear data if nothing is selected
     } else {
       onSave(date, data); // Save data if something is selected
@@ -39,12 +69,21 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
     onClose();
   };
 
-  const renderButton = (title, currentValue, setValue) => (
+  const renderButton = (title, currentValue, setValue, multiple = false) => (
     <TouchableOpacity
       key={title}
       style={[styles.button, currentValue === title && styles.selectedButton]}
       onPress={() => {
-        setValue(currentValue === title ? "" : title);
+        if (multiple) {
+          // Toggle selection for multiple symptoms (mental symptoms)
+          if (currentValue.includes(title)) {
+            setValue(currentValue.filter((item) => item !== title));
+          } else {
+            setValue([...currentValue, title]);
+          }
+        } else {
+          setValue(currentValue === title ? "" : title);
+        }
       }}
     >
       <Text style={styles.buttonText}>{title}</Text>
@@ -53,9 +92,10 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={styles.modalContainer}>
-        <Text style={styles.title}>Cycle Data for {date}</Text>
+      <SafeAreaView style={styles.modalContainer}>
+        <Text style={styles.title}>Cycle Data for {formattedDate}</Text>
 
+        {/* Flow Section */}
         <Text style={styles.label}>Flow</Text>
         <View style={styles.buttonContainer}>
           {["Light", "Medium", "Heavy"].map((option) =>
@@ -63,6 +103,7 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
           )}
         </View>
 
+        {/* Pain Section */}
         <Text style={styles.label}>Pain</Text>
         <View style={styles.buttonContainer}>
           {["None", "Mild", "Severe"].map((option) =>
@@ -70,6 +111,7 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
           )}
         </View>
 
+        {/* Spotting Section */}
         <Text style={styles.label}>Spotting</Text>
         <View style={styles.buttonContainer}>
           {["Yes", "No"].map((option) =>
@@ -77,17 +119,38 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
           )}
         </View>
 
+        {/* Feelings Section */}
         <Text style={styles.label}>Feelings</Text>
+        <View style={styles.buttonContainer}>
+          {["Happy", "Sad", "Irritable", "Anxious", "Calm"].map((option) =>
+            renderButton(option, feelings, setFeelings)
+          )}
+        </View>
+
+        {/* Mental Symptoms Section */}
+        <Text style={styles.label}>Mental Symptoms</Text>
+        <View style={styles.buttonContainer}>
+          {["Cramps", "Fatigue", "Mood Swings", "Bloating"].map((option) =>
+            renderButton(option, mentalSymptoms, setMentalSymptoms, true)
+          )}
+        </View>
+
+        {/* Notes Section */}
+        <Text style={styles.label}>Notes</Text>
         <TextInput
-          value={feelings}
-          onChangeText={setFeelings}
-          placeholder="Describe your feelings"
+          value={notes}
+          onChangeText={setNotes}
+          placeholder="Add any additional notes here"
           style={styles.input}
+          multiline
         />
 
-        <Button title="Save" onPress={handleSave} />
-        <Button title="Cancel" onPress={onClose} />
-      </View>
+        {/* Save and Cancel Buttons */}
+        <View style={styles.buttonRow}>
+          <Button title="Cancel" onPress={onClose} />
+          <Button title="Save" onPress={handleSave} />
+        </View>
+      </SafeAreaView>
     </Modal>
   );
 };
@@ -95,29 +158,34 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "space-between",
     padding: 20,
     backgroundColor: "#fff",
+    marginTop: Platform.OS === "ios" ? 0 : StatusBar.currentHeight, // Adjust for the status bar on iOS devices
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center", // Center the title
   },
   label: {
     fontSize: 16,
-    marginTop: 10,
+    marginTop: 20,
     fontWeight: "bold",
+    textAlign: "center", // Center the label text
   },
   buttonContainer: {
     flexDirection: "row",
     marginTop: 10,
-    justifyContent: "space-between",
+    justifyContent: "center", // Center the buttons horizontally
+    flexWrap: "wrap",
   },
   button: {
     padding: 10,
     backgroundColor: "#ddd",
     borderRadius: 5,
+    margin: 5,
   },
   selectedButton: {
     backgroundColor: "#ff6347",
@@ -127,147 +195,16 @@ const styles = StyleSheet.create({
   },
   input: {
     borderBottomWidth: 1,
-    marginBottom: 10,
+    marginBottom: 20,
     padding: 8,
     fontSize: 16,
+    minHeight: 60,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
   },
 });
 
 export default AddCycleDataModal;
-
-// import React, { useEffect, useState } from "react";
-// import {
-//   Button,
-//   Modal,
-//   StyleSheet,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   View,
-// } from "react-native";
-
-// const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
-//   const [flow, setFlow] = useState("");
-//   const [pain, setPain] = useState("");
-//   const [spotting, setSpotting] = useState("");
-//   const [feelings, setFeelings] = useState("");
-
-//   // Set initial values when the modal is opened
-//   useEffect(() => {
-//     if (initialData) {
-//       setFlow(initialData.flow || ""); // Set initial values from data if available
-//       setPain(initialData.pain || "");
-//       setSpotting(initialData.spotting || "");
-//       setFeelings(initialData.feelings || "");
-//     } else {
-//       setFlow(""); // Default values for new entries
-//       setPain("");
-//       setSpotting("");
-//       setFeelings("");
-//     }
-//   }, [initialData]); // This runs every time `initialData` changes
-
-//   // Handle saving the data when user clicks Save
-//   const handleSave = () => {
-//     const data = { flow, pain, spotting, feelings };
-//     onSave(date, data); // Pass the updated data to the parent component (CalendarScreen)
-//     onClose(); // Close the modal after saving
-//   };
-
-//   // Toggle button selection logic
-//   const renderButton = (title, currentValue, setValue) => (
-//     <TouchableOpacity
-//       key={title}
-//       style={[styles.button, currentValue === title && styles.selectedButton]} // Highlight button if selected
-//       onPress={() => {
-//         // Toggle selection (if selected, unselect it)
-//         setValue(currentValue === title ? "" : title);
-//       }}
-//     >
-//       <Text style={styles.buttonText}>{title}</Text>
-//     </TouchableOpacity>
-//   );
-
-//   return (
-//     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-//       <View style={styles.modalContainer}>
-//         <Text style={styles.title}>Cycle Data for {date}</Text>
-
-//         <Text style={styles.label}>Flow</Text>
-//         <View style={styles.buttonContainer}>
-//           {["Light", "Medium", "Heavy"].map((option) =>
-//             renderButton(option, flow, setFlow)
-//           )}
-//         </View>
-
-//         <Text style={styles.label}>Pain</Text>
-//         <View style={styles.buttonContainer}>
-//           {["None", "Mild", "Severe"].map((option) =>
-//             renderButton(option, pain, setPain)
-//           )}
-//         </View>
-
-//         <Text style={styles.label}>Spotting</Text>
-//         <View style={styles.buttonContainer}>
-//           {["Yes", "No"].map((option) =>
-//             renderButton(option, spotting, setSpotting)
-//           )}
-//         </View>
-
-//         <Text style={styles.label}>Feelings</Text>
-//         <TextInput
-//           value={feelings}
-//           onChangeText={setFeelings}
-//           placeholder="Describe your feelings"
-//           style={styles.input}
-//         />
-
-//         <Button title="Save" onPress={handleSave} />
-//         <Button title="Cancel" onPress={onClose} />
-//       </View>
-//     </Modal>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   modalContainer: {
-//     flex: 1,
-//     justifyContent: "center",
-//     padding: 20,
-//     backgroundColor: "#fff",
-//   },
-//   title: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     marginBottom: 20,
-//   },
-//   label: {
-//     fontSize: 16,
-//     marginTop: 10,
-//     fontWeight: "bold",
-//   },
-//   buttonContainer: {
-//     flexDirection: "row",
-//     marginTop: 10,
-//     justifyContent: "space-between",
-//   },
-//   button: {
-//     padding: 10,
-//     backgroundColor: "#ddd",
-//     borderRadius: 5,
-//   },
-//   selectedButton: {
-//     backgroundColor: "#ff6347", // Highlight selected button
-//   },
-//   buttonText: {
-//     color: "#fff",
-//   },
-//   input: {
-//     borderBottomWidth: 1,
-//     marginBottom: 10,
-//     padding: 8,
-//     fontSize: 16,
-//   },
-// });
-
-// export default AddCycleDataModal;
