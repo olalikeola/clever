@@ -1,8 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect } from "react";
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 //import CycleLengthInsights from "../components/CycleLengthInsights";
 //import CycleInsightsScreen from "../components/CycleLengthChart";
+import { SafeAreaView } from "react-native-safe-area-context";
 import CycleLengthChart from "../components/CycleLengthChart";
 const InsightsScreen = () => {
   // print in insights screen
@@ -27,10 +28,12 @@ const InsightsScreen = () => {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.sectionTitle}>Cycle Length Trend</Text>
-      <CycleLengthChart />
-    </ScrollView>
+    <SafeAreaView style={styles.safecontainer}>
+      <ScrollView contentContainerStyle={styles.container}>
+        {/* <Text style={styles.sectionTitle}>Cycle Length Trend</Text> */}
+        <CycleLengthChart />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
