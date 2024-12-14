@@ -21,11 +21,20 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
   const [notes, setNotes] = useState("");
 
   // Format the date into the desired format: "Dec 12, 2024"
-  const formattedDate = new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  // const formattedDate = new Date(date).toLocaleDateString("en-US", {
+  //   year: "numeric",
+  //   month: "short",
+  //   day: "numeric",
+  // });
+  const formattedDate = date
+    ? new Date(date).toLocaleDateString("en-US", {
+        year: "numeric",
+
+        month: "short",
+
+        day: "numeric",
+      })
+    : "";
 
   useEffect(() => {
     if (initialData) {
@@ -93,7 +102,7 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={styles.modalContainer}>
-        <Text style={styles.title}>Cycle Data for {formattedDate}</Text>
+        <Text style={styles.title}>Cycle Data for {date}</Text>
 
         {/* Flow Section */}
         <Text style={styles.label}>Flow</Text>
