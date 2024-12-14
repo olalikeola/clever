@@ -16,8 +16,8 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
   const [flow, setFlow] = useState("");
   const [pain, setPain] = useState("");
   const [spotting, setSpotting] = useState("");
-  const [feelings, setFeelings] = useState("");
-  const [mentalSymptoms, setMentalSymptoms] = useState([]);
+  const [feelings, setFeelings] = useState([]); // Store feelings as an array
+  const [mentalSymptoms, setMentalSymptoms] = useState([]); // Store mental symptoms as an array
   const [notes, setNotes] = useState("");
 
   // Format the date into the desired format: "Dec 12, 2024"
@@ -32,14 +32,14 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
       setFlow(initialData.flow || "");
       setPain(initialData.pain || "");
       setSpotting(initialData.spotting || "");
-      setFeelings(initialData.feelings || "");
+      setFeelings(initialData.feelings || []);
       setMentalSymptoms(initialData.mentalSymptoms || []);
       setNotes(initialData.notes || "");
     } else {
       setFlow("");
       setPain("");
       setSpotting("");
-      setFeelings("");
+      setFeelings([]);
       setMentalSymptoms([]);
       setNotes("");
     }
@@ -58,7 +58,7 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
       !flow &&
       !pain &&
       !spotting &&
-      !feelings &&
+      feelings.length === 0 &&
       mentalSymptoms.length === 0 &&
       !notes
     ) {
@@ -72,7 +72,11 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
   const renderButton = (title, currentValue, setValue, multiple = false) => (
     <TouchableOpacity
       key={title}
-      style={[styles.button, currentValue === title && styles.selectedButton]}
+      style={[
+        styles.button,
+        (multiple ? currentValue.includes(title) : currentValue === title) &&
+          styles.selectedButton,
+      ]}
       onPress={() => {
         if (multiple) {
           // Toggle selection for multiple symptoms (mental symptoms)
@@ -122,16 +126,17 @@ const AddCycleDataModal = ({ visible, onClose, onSave, date, initialData }) => {
         {/* Feelings Section */}
         <Text style={styles.label}>Feelings</Text>
         <View style={styles.buttonContainer}>
-          {["Happy", "Sad", "Irritable", "Anxious", "Calm"].map((option) =>
-            renderButton(option, feelings, setFeelings)
+          {["Happy", "Sad", "Irritable", "Anxious", "Calm"].map(
+            (option) => renderButton(option, feelings, setFeelings, true) // Passing 'true' for multiple selections
           )}
         </View>
 
-        {/* Mental Symptoms Section */}
+        {/* Menstral Symptoms Section */}
         <Text style={styles.label}>Symptoms</Text>
         <View style={styles.buttonContainer}>
-          {["Cramps", "Fatigue", "Mood Swings", "Bloating"].map((option) =>
-            renderButton(option, mentalSymptoms, setMentalSymptoms, true)
+          {["Cramps", "Fatigue", "Mood Swings", "Bloating"].map(
+            (option) =>
+              renderButton(option, mentalSymptoms, setMentalSymptoms, true) // Passing 'true' for multiple selections
           )}
         </View>
 
@@ -232,20 +237,11 @@ export default AddCycleDataModal;
 //   const [notes, setNotes] = useState("");
 
 //   // Format the date into the desired format: "Dec 12, 2024"
-//   // const formattedDate = new Date(date).toLocaleDateString("en-US", {
-//   //   year: "numeric",
-//   //   month: "short",
-//   //   day: "numeric",
-//   // });
-//   const formattedDate = date
-//     ? new Date(date).toLocaleDateString("en-US", {
-//         year: "numeric",
-
-//         month: "short",
-
-//         day: "numeric",
-//       })
-//     : "";
+//   const formattedDate = new Date(date).toLocaleDateString("en-US", {
+//     year: "numeric",
+//     month: "short",
+//     day: "numeric",
+//   });
 
 //   useEffect(() => {
 //     if (initialData) {
@@ -313,7 +309,7 @@ export default AddCycleDataModal;
 //   return (
 //     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
 //       <SafeAreaView style={styles.modalContainer}>
-//         <Text style={styles.title}>Cycle Data for {formattedDate}</Text>
+//         <Text style={styles.title}>Cycle Data for {date}</Text>
 
 //         {/* Flow Section */}
 //         <Text style={styles.label}>Flow</Text>
@@ -348,7 +344,7 @@ export default AddCycleDataModal;
 //         </View>
 
 //         {/* Mental Symptoms Section */}
-//         <Text style={styles.label}>Mental Symptoms</Text>
+//         <Text style={styles.label}>Symptoms</Text>
 //         <View style={styles.buttonContainer}>
 //           {["Cramps", "Fatigue", "Mood Swings", "Bloating"].map((option) =>
 //             renderButton(option, mentalSymptoms, setMentalSymptoms, true)
